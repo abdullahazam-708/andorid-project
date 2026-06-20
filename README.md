@@ -17,52 +17,52 @@ Welcome to my portfolio repository containing a collection of cross-platform mob
 
 ### 1. Cloud-Integrated Smartphone Inventory System (`firebaseIntigreation`)
 * **Description:** A mobile inventory manager integrated with **Firebase Firestore** for real-time CRUD operations, automatic cloud synchronization, and responsive document streaming.
-* **Key Topics:** Cloud database integration, live data streaming, Firestore CRUD interfaces.
+* **Skills & Tech:** Flutter, Dart, Firebase Firestore Integration, Real-Time Data Streaming (`StreamBuilder`), State binding (`StatefulWidget`), Cloud Database CRUD operations.
 
 ### 2. SQLite Bookstore Database Manager (`finallabexam`)
 * **Description:** A local bookstore inventory application featuring local persistent storage using the **SQFlite** package. Implements a helper singleton to query, add, update, and delete records offline.
-* **Key Topics:** Relational local storage, SQLite Helper patterns, CRUD controllers.
+* **Skills & Tech:** SQLite (`sqflite` package), custom database helpers (Singleton pattern), Local Database CRUD operations, Asynchronous UI Rendering (`FutureBuilder`), Data Models (Map conversion).
 
 ### 3. Real-Time Weather Forecasting Application (`fluter_weather_app`)
 * **Description:** A live weather tracking application querying current meteorological stats from the OpenWeatherMap API using the `http` package and parsing raw JSON responses dynamically.
-* **Key Topics:** REST APIs, HTTP networking, loading state control, JSON parsing.
+* **Skills & Tech:** REST APIs, HTTP networking (`http` package), JSON decoding (`dart:convert`), client-side loading states, dynamic data rendering, HTTP error handling.
 
 ### 4. Live Exchange Rate Currency Converter (`flutter_curreny_app`)
 * **Description:** A converter utility leveraging external currency rate REST APIs to fetch the latest rates and convert amounts dynamically with user dropdown menus.
-* **Key Topics:** Dropdown selectors, REST API queries, currency conversion logic.
+* **Skills & Tech:** External REST API queries, math state calculations, third-party dropdown widgets (`dropdown_button2`).
 
-### 5. BLoC & Riverpod State-Managed Calculators (`bloc_example` / `riverpodcalculatorapp`)
-* **Description:** Interactive calculator projects showcasing clean architectural separations of UI from logic using the **BLoC (Business Logic Component)** pattern and **Riverpod** state notifications.
-* **Key Topics:** Advanced state management, action events, consumer widgets.
+### 5. BLoC State-Managed Calculator (`bloc_example`)
+* **Description:** An interactive calculator project showcasing clean architectural separation of UI from logic using the BLoC pattern.
+* **Skills & Tech:** BLoC (Business Logic Component) pattern, State-Event separation architecture, custom event classes, stateless UI components, `flutter_bloc` integration.
 
-### 6. Provider-Based Student Directory System (`providerexamplle`)
+### 6. Riverpod State Calculator (`riverpodcalculatorapp`)
+* **Description:** An interactive calculator project showcasing reactive UI building and global state providers.
+* **Skills & Tech:** Riverpod state management, `StateNotifier` architectures, reactive UI building (`ConsumerWidget`), global state providers.
+
+### 7. Provider-Based Student Directory System (`providerexamplle`)
 * **Description:** A student listing and data management interface utilizing the **Provider** framework to publish and share app-level changes efficiently across nested widgets.
-* **Key Topics:** ChangeNotifier, Provider architectures, UI notifications.
+* **Skills & Tech:** Provider pattern, state notify-listeners mechanism (`ChangeNotifier`), state injection (`ChangeNotifierProvider`), dynamic UI updates.
 
-### 7. SQLite User Authentication & CRUD Dashboard (`sqlliteproject`)
+### 8. SQLite User Authentication & CRUD Dashboard (`sqlliteproject`)
 * **Description:** A user dashboard featuring local SQLite-backed registration, authentication flows, and a CRUD database profile screen.
-* **Key Topics:** User registration logic, database authentications, SQLite CRUD.
+* **Skills & Tech:** User signup/login validations, local session state control, SQLite database lookups.
 
-### 8. Performance-Optimized Employee Directory (`listview_employee`)
+### 9. Performance-Optimized Employee Directory (`listview_employee`)
 * **Description:** A layout directory rendering data lists efficiently using Flutter's `ListView.builder` adapters to optimize memory footprint.
-* **Key Topics:** Performance optimization, custom model adapters.
+* **Skills & Tech:** Flutter list performance optimizations (`ListView.builder`), dynamic list mapping, custom UI list adapters.
 
-### 9. Product Catalog & Data Validator (`openendedlab`)
+### 10. Product Catalog & Data Validator (`openendedlab`)
 * **Description:** An in-memory inventory listing app featuring live validation inputs, negative value prevention, and item entry checking.
-* **Key Topics:** Dynamic listings, input parsing, client-side safety checks.
+* **Skills & Tech:** Client-side data integrity validation, in-memory collection updates, user error feedback (`SnackBar`).
 
-### 10. Asynchronous Stopwatch & Timer Utility (`stopwatch_app`)
+### 11. Asynchronous Stopwatch & Timer Utility (`stopwatch_app`)
 * **Description:** An elegant custom stopwatch utility displaying a clean interface while managing async periodic timers and state controls.
-* **Key Topics:** Dart async library (`Timer.periodic`), time formatting algorithms.
-
-### 11. Interactive Square Calculator Tool (`square_app`)
-* **Description:** A utility that instantly computes the mathematical square of user-entered numeric values with immediate validation.
-* **Key Topics:** Numeric input validations, simple layout designs.
+* **Skills & Tech:** Dart asynchronous library (`Timer.periodic`), custom time formatting algorithms, linear gradient background layouts.
 
 ### 12. Multi-Screen Navigator Showcase (`newapp`)
 * **Description:** An application demonstrating multi-page routing, page-to-page state transfers, and Navigator controllers in Flutter.
-* **Key Topics:** Flutter Routing, context transfer.
+* **Skills & Tech:** Flutter navigation routing (`Navigator.push`), context-based arguments passing, multi-screen state transfer.
 
 ### 13. Input Validator and Form Controller (`datavalidationflutterapp`)
 * **Description:** A validation interface showcasing input validation patterns, email/password regex verification, and real-time form checks.
-* **Key Topics:** Live validation, regex parsing.
+* **Skills & Tech:** Form state management, email/password regex validation patterns, form controller status checks.
