@@ -1,0 +1,835 @@
+name: finallabexam
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  http: ^1.2.1
+  shared_preferences: ^2.2.3
+  firebase_core: ^3.15.1
+  firebase_auth: ^5.1.4
+  cloud_firestore: ^5.2.1
+  flutter_bloc: ^9.1.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
+  import 'package:flutter/material.dart';
+  import 'package:path/path.dart';
+  import 'package:sqflite/sqflite.dart';
+  
+  void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DBHelper.instance.database;
+  runApp(BookStoreApp());
+}
+
+  class BookStoreApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+  return MaterialApp(
+debugShowCheckedModeBanner: false,
+home: BookPage(),
+  );
+}
+}
+
+  //================ BOOK MODEL ================
+  
+  class Book {
+  final int? bookId;
+  final String bookName;
+  final String author;
+  final int quantity;
+  final double price;
+
+  Book({
+  this.bookId,
+  required this.bookName,
+  required this.author,
+  required this.quantity,
+  required this.price,
+});
+
+  Map<String, dynamic> toMap() {
+  return {
+'bookId': bookId,
+'bookName': bookName,
+'author': author,
+'quantity': quantity,
+'price': price,
+};
+}
+
+  factory Book.fromMap(Map<String, dynamic> map) {
+  return Book(
+bookId: map['bookId'],
+bookName: map['bookName'],
+author: map['author'],
+quantity: map['quantity'],
+price: map['price'],
+  );
+}
+}
+
+  //================ DATABASE ================
+  
+  class DBHelper {
+  DBHelper._privateConstructor();
+
+  static final DBHelper instance = DBHelper._privateConstructor();
+
+  static Database? _db;
+
+  Future<Database> get database async =>
+  _db ??= await _initDB();
+
+  Future<Database> _initDB() async {
+  String path =
+  join(await getDatabasesPath(), "bookstore.db");
+  
+  return await openDatabase(
+  path,
+version: 1,
+onCreate: _onCreate,
+  );
+}
+
+  Future _onCreate(Database db, int version) async {
+  await db.execute('''
+  CREATE TABLE book(
+  bookId INTEGER PRIMARY KEY AUTOINCREMENT,
+  bookName TEXT,
+  author TEXT,
+  quantity INTEGER,
+  price REAL
+  )
+  ''');
+  }
+
+  Future<int> insertBook(Book b) async {
+    Database db = await instance.database;
+    return await db.insert('book', b.toMap());
+}
+
+  Future<List<Book>> getBooks() async {
+  Database db = await instance.database;
+  
+  final List<Map<String, dynamic>> list =
+  await db.query('book');
+  
+  return List.generate(
+  list.length,
+  (i) => Book.fromMap(list[i]),
+  );
+}
+
+  Future<int> updateBook(Book b) async {
+  Database db = await instance.database;
+  
+  return await db.update(
+  'book',
+  b.toMap(),
+where: 'bookId=?',
+whereArgs: [b.bookId],
+  );
+  }
+
+  Future<int> deleteBook(int id) async {
+  Database db = await instance.database;
+  
+  return await db.delete(
+  'book',
+where: 'bookId=?',
+whereArgs: [id],
+  );
+  }
+}
+
+  //================ UI ================
+  
+  class BookPage extends StatefulWidget {
+  @override
+  State<BookPage> createState() => BookPageState();
+}
+
+  class BookPageState extends State<BookPage> {
+  TextEditingController txtBook =
+  TextEditingController();
+
+  TextEditingController txtAuthor =
+  TextEditingController();
+
+  TextEditingController txtQty =
+  TextEditingController();
+
+  TextEditingController txtPrice =
+  TextEditingController();
+
+  Book? selectedBook;
+
+  void clearFields() {
+  txtBook.clear();
+  txtAuthor.clear();
+  txtQty.clear();
+  txtPrice.clear();
+  selectedBook = null;
+  }
+
+  void refresh() {
+  setState(() {});
+  }
+
+  bool validate() {
+  if (txtBook.text.isEmpty ||
+  txtAuthor.text.isEmpty ||
+  txtQty.text.isEmpty ||
+  txtPrice.text.isEmpty) {
+  ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+content: Text("All fields are required"),
+  ),
+  );
+  return false;
+}
+
+  return true;
+}
+
+  @override
+  Widget build(BuildContext context) {
+  return Scaffold(
+appBar: AppBar(
+  title: Text("Book Store Inventory"),
+  ),
+body: Padding(
+  padding: EdgeInsets.all(15),
+  child: Column(
+    children: [
+
+      TextField(
+      controller: txtBook,
+      decoration:
+        InputDecoration(labelText: "Book Name"),
+      ),
+
+      TextField(
+      controller: txtAuthor,
+      decoration:
+        InputDecoration(labelText: "Author"),
+      ),
+
+      TextField(
+      controller: txtQty,
+      keyboardType: TextInputType.number,
+      decoration:
+        InputDecoration(labelText: "Quantity"),
+      ),
+
+      TextField(
+      controller: txtPrice,
+      keyboardType: TextInputType.number,
+      decoration:
+        InputDecoration(labelText: "Price"),
+      ),
+
+      SizedBox(height: 15),
+
+      Row(
+      children: [
+        ElevatedButton(
+        onPressed: () async {
+                              if (!validate()) return;
+                              
+                              Book b = Book(
+          bookName: txtBook.text,
+          author: txtAuthor.text,
+          quantity:
+            int.parse(txtQty.text),
+          price:
+            double.parse(txtPrice.text),
+                              );
+                              
+                              await DBHelper.instance
+                              .insertBook(b);
+                              
+                              clearFields();
+                              refresh();
+        },
+        child: Text("Add"),
+        ),
+
+        SizedBox(width: 10),
+
+        ElevatedButton(
+        onPressed: selectedBook == null
+          ? null
+            : () async {
+                         if (!validate()) return;
+                         
+                         Book b = Book(
+            bookId:
+              selectedBook!.bookId,
+            bookName: txtBook.text,
+            author: txtAuthor.text,
+            quantity: int.parse(
+              txtQty.text),
+            price: double.parse(
+              txtPrice.text),
+                         );
+                         
+                         await DBHelper.instance
+                         .updateBook(b);
+                         
+                         clearFields();
+                         refresh();
+          },
+        child: Text("Update"),
+        ),
+      ],
+      ),
+
+      Divider(),
+
+      Expanded(
+      child: FutureBuilder<List<Book>>(
+        future: DBHelper.instance.getBooks(),
+      builder: (context, snapshot) {
+                                     if (!snapshot.hasData) {
+        return Center(
+        child:
+          CircularProgressIndicator(),
+        );
+      }
+
+                                     List<Book> books =
+                                     snapshot.data!;
+                                     
+                                     double totalValue = 0;
+                                     
+                                     for (var b in books) {
+        totalValue +=
+        b.quantity * b.price;
+      }
+
+                                     return Column(
+        children: [
+
+          Text(
+          "Total Inventory Value = Rs. ${totalValue.toStringAsFixed(2)}",
+          style: TextStyle(
+            fontSize: 18,
+          fontWeight:
+            FontWeight.bold,
+          ),
+          ),
+
+          SizedBox(height: 10),
+
+          Expanded(
+          child: ListView.builder(
+            itemCount: books.length,
+          itemBuilder:
+            (context, index) {
+                               Book b = books[index];
+                               
+                               double stockValue =
+                               b.quantity *
+                               b.price;
+                               
+                               return Card(
+            child: ListTile(
+              title:
+                Text(b.bookName),
+
+            subtitle: Text(
+                        "Author: ${b.author}\n"
+                        "Quantity: ${b.quantity}\n"
+                        "Price: Rs. ${b.price}\n"
+                        "Stock Value: Rs. ${stockValue.toStringAsFixed(2)}",
+                               ),
+
+            onTap: () {
+                        setState(() {
+              selectedBook =
+              b;
+              
+              txtBook.text =
+              b.bookName;
+              
+              txtAuthor.text =
+              b.author;
+              
+              txtQty.text =
+              b.quantity
+              .toString();
+              
+              txtPrice.text =
+              b.price
+              .toString();
+            });
+            },
+
+            trailing:
+              IconButton(
+              icon: Icon(
+                Icons.delete),
+            onPressed:
+                () async {
+                           await DBHelper
+                           .instance
+                           .deleteBook(
+                           b.bookId!);
+                           
+                           refresh();
+            },
+                               ),
+                               ),
+                               );
+          },
+          ),
+          ),
+        ],
+                                     );
+      },
+      ),
+      ),
+    ],
+  ),
+  ),
+  );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  import 'package:flutter/material.dart';
+  import 'package:sqflite/sqflite.dart';
+  import 'package:path/path.dart';
+  
+  void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DBHelper.instance.database;
+  runApp(BookStoreApp());
+}
+
+  class BookStoreApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+  return MaterialApp(
+debugShowCheckedModeBanner: false,
+home: BookPage(),
+  );
+}
+}
+
+  // ================= BOOK MODEL =================
+  
+  class Book {
+  final int? bookId;
+  final String bookName;
+  final String authorName;
+  final int quantity;
+
+  Book({
+  this.bookId,
+  required this.bookName,
+  required this.authorName,
+  required this.quantity,
+});
+
+  Map<String, dynamic> toMap() {
+  return {
+'bookId': bookId,
+'bookName': bookName,
+'authorName': authorName,
+'quantity': quantity,
+};
+}
+
+  factory Book.fromMap(Map<String, dynamic> map) {
+  return Book(
+bookId: map['bookId'],
+bookName: map['bookName'],
+authorName: map['authorName'],
+quantity: map['quantity'],
+  );
+}
+}
+
+  // ================= DB HELPER =================
+  
+  class DBHelper {
+  DBHelper._privateConstructor();
+
+  static final DBHelper instance = DBHelper._privateConstructor();
+
+  static Database? _db;
+
+  Future<Database> get database async =>
+  _db ??= await _initDB();
+
+  Future<Database> _initDB() async {
+  String path = join(await getDatabasesPath(), "book.db");
+  
+  return await openDatabase(
+  path,
+version: 1,
+onCreate: _onCreate,
+  );
+}
+
+  Future _onCreate(Database db, int version) async {
+  await db.execute('''
+  CREATE TABLE book(
+  bookId INTEGER PRIMARY KEY AUTOINCREMENT,
+  bookName TEXT,
+  authorName TEXT,
+  quantity INTEGER
+  )
+  ''');
+  }
+
+  Future<int> insertBook(Book b) async {
+    Database db = await instance.database;
+    return await db.insert('book', b.toMap());
+}
+
+  Future<List<Book>> searchBook() async {
+  Database db = await instance.database;
+  
+  final List<Map<String, dynamic>> bookList =
+  await db.query("book");
+  
+  return List.generate(
+  bookList.length,
+  (i) => Book.fromMap(bookList[i]),
+  );
+}
+
+  Future<int> updateBook(Book b) async {
+  Database db = await instance.database;
+  
+  return await db.update(
+  "book",
+  b.toMap(),
+where: 'bookId = ?',
+whereArgs: [b.bookId],
+  );
+  }
+
+  Future<int> deleteBook(int id) async {
+  Database db = await instance.database;
+  
+  return await db.delete(
+  "book",
+where: 'bookId = ?',
+whereArgs: [id],
+  );
+  }
+}
+
+  // ================= UI =================
+  
+  class BookPage extends StatefulWidget {
+  @override
+  State<BookPage> createState() => BookPageState();
+}
+
+  class BookPageState extends State<BookPage> {
+  TextEditingController txtBookName =
+  TextEditingController();
+
+  TextEditingController txtAuthorName =
+  TextEditingController();
+
+  TextEditingController txtQuantity =
+  TextEditingController();
+
+  Book? selectedBook;
+
+  void clearFields() {
+  txtBookName.clear();
+  txtAuthorName.clear();
+  txtQuantity.clear();
+  selectedBook = null;
+  }
+
+  void refresh() {
+  setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+  return Scaffold(
+appBar: AppBar(
+  title: Text("Book Store CRUD"),
+  ),
+body: Padding(
+  padding: EdgeInsets.all(20),
+  child: Column(
+    children: [
+
+      TextField(
+      controller: txtBookName,
+      decoration: InputDecoration(
+        labelText: "Book Name",
+      ),
+      ),
+
+      TextField(
+      controller: txtAuthorName,
+      decoration: InputDecoration(
+        labelText: "Author Name",
+      ),
+      ),
+
+      TextField(
+      controller: txtQuantity,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: "Quantity",
+      ),
+      ),
+
+      SizedBox(height: 20),
+
+      Row(
+      children: [
+
+        ElevatedButton(
+        onPressed: () async {
+
+                              if (txtBookName.text.isEmpty ||
+                              txtAuthorName.text.isEmpty ||
+                              txtQuantity.text.isEmpty) {
+
+          ScaffoldMessenger.of(context)
+          .showSnackBar(
+          SnackBar(
+          content:
+            Text("Fill all fields"),
+          ),
+          );
+          return;
+        }
+
+                              Book b = Book(
+          bookName: txtBookName.text,
+          authorName: txtAuthorName.text,
+          quantity:
+            int.parse(txtQuantity.text),
+                              );
+                              
+                              await DBHelper.instance
+                              .insertBook(b);
+                              
+                              clearFields();
+                              refresh();
+        },
+        child: Text("Add"),
+        ),
+
+        SizedBox(width: 10),
+
+        ElevatedButton(
+        onPressed: selectedBook == null
+          ? null
+            : () async {
+
+                         Book b = Book(
+            bookId:
+              selectedBook!.bookId,
+            bookName:
+              txtBookName.text,
+            authorName:
+              txtAuthorName.text,
+            quantity: int.parse(
+              txtQuantity.text),
+                         );
+                         
+                         await DBHelper.instance
+                         .updateBook(b);
+                         
+                         clearFields();
+                         refresh();
+          },
+        child: Text("Update"),
+        ),
+      ],
+      ),
+
+      Divider(),
+
+      Expanded(
+      child: FutureBuilder<List<Book>>(
+        future:
+          DBHelper.instance.searchBook(),
+      builder: (context, snapshot) {
+
+                                     if (!snapshot.hasData) {
+        return Center(
+        child:
+          CircularProgressIndicator(),
+        );
+      }
+
+                                     List<Book> books =
+                                     snapshot.data!;
+                                     
+                                     return ListView.builder(
+        itemCount: books.length,
+        itemBuilder: (context, index) {
+
+        Book b = books[index];
+        
+        return ListTile(
+        title: Text(b.bookName),
+        subtitle: Text(
+                    "Author: ${b.authorName}\n"
+                    "Quantity: ${b.quantity}",
+        ),
+
+        onTap: () {
+                    setState(() {
+          selectedBook = b;
+          
+          txtBookName.text =
+          b.bookName;
+          
+          txtAuthorName.text =
+          b.authorName;
+          
+          txtQuantity.text =
+          b.quantity.toString();
+        });
+        },
+
+        trailing: IconButton(
+          icon: Icon(Icons.delete),
+        onPressed: () async {
+
+                              await DBHelper.instance
+                              .deleteBook(
+                              b.bookId!);
+                              
+                              refresh();
+        },
+        ),
+        );
+      },
+                                     );
+      },
+      ),
+      ),
+    ],
+  ),
+  ),
+  );
+  }
+}
